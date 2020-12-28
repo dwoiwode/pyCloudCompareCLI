@@ -275,7 +275,7 @@ class SEPARATOR(Enum):
 
 
 class CLOUD_EXPORT_FORMAT(Enum):
-    ASC = "ASC"
+    ASCII = "ASC"
     BIN = "BIN"
     PLY = "PLY"
     LAS = "LAS"

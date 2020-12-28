@@ -12,13 +12,12 @@ When building is complete, the command has to be executed.
 Read ply-file and save in ascii-format with extension ".xyz". Disable console
 
 ````python
-
 import pyCloudCompare as cc
 
 cmd = cc.CloudCompareCMD()
 cmd.silent()  # Disable console
 cmd.open("pointcloud.ply")  # Read file
-cmd.cloudExportFormat(cc.CLOUD_EXPORT_FORMAT.ASC, extension="xyz")
+cmd.cloudExportFormat(cc.CLOUD_EXPORT_FORMAT.ASCII, extension="xyz")
 cmd.saveClouds("newPointcloud.xyz")
 print(cmd)
 cmd.execute()
