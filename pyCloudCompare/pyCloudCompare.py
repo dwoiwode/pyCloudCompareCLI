@@ -1,7 +1,6 @@
 """ Python Wrapper for CloudCompare CLI """
 import subprocess
 import sys
-from dataclasses import dataclass
 from enum import Enum
 from functools import wraps
 from pathlib import Path
@@ -352,10 +351,13 @@ def cc(func):
     return wrapper
 
 
-@dataclass
 class CCCommand:
-    funcName: str
-    arguments: tuple
+    def __init__(self, functionName: str, arguments: List[Any]):
+        self.functionName = functionName
+        self.arguments = arguments
+
+    def __repr__(self):
+        return f"CCCommand({self.functionName}, {self.arguments})"
 
 
 class CloudCompareCMD:
@@ -400,7 +402,7 @@ class CloudCompareCMD:
 
     # =================== Commands ===================
     @cc
-    def silent(self, isSilent= True):
+    def silent(self, isSilent=True):
         if isSilent:
             if FLAGS.SILENT not in self.arguments:
                 self.arguments.append(FLAGS.SILENT)
@@ -814,7 +816,7 @@ class CloudCompareCMD:
             self.arguments.append('"' + ' '.join(map(str, files)) + '"')
 
     @cc
-    def saveMeshes(self,*files, allAtOnce=False):
+    def saveMeshes(self, *files, allAtOnce=False):
         self.arguments.append(FLAGS.SAVE_MESHES)
         if allAtOnce:
             self.arguments.append(OPTIONS.ALL_AT_ONCE)

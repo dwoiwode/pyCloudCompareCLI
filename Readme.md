@@ -5,7 +5,7 @@ This library works by opening a new subprocess with a command you build step by 
 When building is complete, the command has to be executed. 
 
 ## Requirements
-* Python3.7+ (or Python3.6+ with dataclasses)
+* Python3.6+
 * Installed version of [CloudCompare](https://cloudcompare.org/)
 
 ## Basic Usage
