@@ -10,8 +10,10 @@ When building is complete, the command has to be executed.
 
 ## Basic Usage
 Read ply-file and save in ascii-format with extension ".xyz". Disable console
+
 ````python
-import cloudCompare as cc
+
+import pyCloudCompare as cc
 
 cmd = cc.CloudCompareCMD()
 cmd.silent()  # Disable console

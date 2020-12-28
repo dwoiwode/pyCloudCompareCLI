@@ -1,3 +1,4 @@
+""" Python Wrapper for CloudCompare CLI """
 import subprocess
 import sys
 from dataclasses import dataclass
@@ -6,13 +7,17 @@ from functools import wraps
 from pathlib import Path
 from typing import List, Any
 
+__version__ = "0.0.1"
+__author__ = "dwoiwode"
+__license__ = "GNU GPLv3"
+
 _platform = sys.platform
 if _platform.startswith("win32"):
     DEFAULT_EXECUTABLE = r"C:\Program Files\CloudCompare\CloudCompare.exe"
 elif _platform.startswith("linux"):
-    DEFAULT_EXECUTABLE = "CloudCompare"  # TODO: Update default executable for linux
+    DEFAULT_EXECUTABLE = "pyCloudCompare"  # TODO: Update default executable for linux
 elif _platform.startswith("darwin"):
-    DEFAULT_EXECUTABLE = "CloudCompare"  # TODO: Update default executable for macOS
+    DEFAULT_EXECUTABLE = "pyCloudCompare"  # TODO: Update default executable for macOS
 
 
 class FLAGS(Enum):

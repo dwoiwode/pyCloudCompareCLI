@@ -1,4 +1,4 @@
-import cloudCompare as cc
+import pyCloudCompare as cc
 
 cmd = cc.CloudCompareCMD()
 cmd.silent()
