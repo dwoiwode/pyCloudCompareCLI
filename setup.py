@@ -5,14 +5,14 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="pyCloudCompare",
+    name="pyCloudCompareCLI",
     version=cc.__version__,
     author=cc.__author__,
     author_email="",
     description=cc.__doc__,
     long_description=long_description,
     long_description_content_type="text/markdown",
-    # url="https://github.com/dwoiwode/pyCloudCompare",
+    url="https://github.com/dwoiwode/pyCloudCompareCLI",
     packages=setuptools.find_packages(),
     license=cc.__license__,
     classifiers=[

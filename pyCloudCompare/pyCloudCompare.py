@@ -14,9 +14,9 @@ _platform = sys.platform
 if _platform.startswith("win32"):
     DEFAULT_EXECUTABLE = r"C:\Program Files\CloudCompare\CloudCompare.exe"
 elif _platform.startswith("linux"):
-    DEFAULT_EXECUTABLE = "pyCloudCompare"  # TODO: Update default executable for linux
+    DEFAULT_EXECUTABLE = "CloudCompare"  # TODO: Update default executable for linux
 elif _platform.startswith("darwin"):
-    DEFAULT_EXECUTABLE = "pyCloudCompare"  # TODO: Update default executable for macOS
+    DEFAULT_EXECUTABLE = "CloudCompare"  # TODO: Update default executable for macOS
 
 
 class FLAGS(Enum):
@@ -312,15 +312,15 @@ class PLY_EXPORT_FORMAT(Enum):
     BINARY_LITTLE_ENDIAN = "BINARY_LE"
 
 
-class Bool(Enum):
+class BOOL(Enum):
     TRUE = "TRUE"
     FALSE = "FALSE"
 
     @classmethod
     def fromBool(cls, value):
         if value:
-            return Bool.TRUE
-        return Bool.FALSE
+            return BOOL.TRUE
+        return BOOL.FALSE
 
 
 class ONOFF(Enum):
@@ -330,13 +330,13 @@ class ONOFF(Enum):
     @classmethod
     def fromBool(cls, value):
         if value:
-            return Bool.ON
-        return Bool.OFF
+            return BOOL.ON
+        return BOOL.OFF
 
 
 def cc(func):
     @wraps(func)
-    def wrapper(self: "CloudCompareCMD", *args, **kwargs):
+    def wrapper(self: "CloudCompareCLI", *args, **kwargs):
         oldArguments = list(self.arguments)
         funcName = func.__name__
         try:
@@ -360,7 +360,7 @@ class CCCommand:
         return f"CCCommand({self.functionName}, {self.arguments})"
 
 
-class CloudCompareCMD:
+class CloudCompareCLI:
     def __init__(self, executable=DEFAULT_EXECUTABLE, arguments: List[Any] = None):
         self.exec = Path(executable).absolute()
         self.arguments = arguments or []
@@ -591,7 +591,7 @@ class CloudCompareCMD:
 
     @cc
     def sfGrad(self, euclidian: bool):
-        euclidian = Bool.fromBool(euclidian)
+        euclidian = BOOL.fromBool(euclidian)
         self.arguments += [FLAGS.SF_GRAD, euclidian]
 
     @cc
@@ -693,7 +693,7 @@ class CloudCompareCMD:
 
     @cc
     def sfConvertToRGB(self, replaceExisting: bool):
-        replaceExisting = Bool.fromBool(replaceExisting)
+        replaceExisting = BOOL.fromBool(replaceExisting)
         self.arguments += [FLAGS.SF_CONVERT_TO_RGB, replaceExisting]
 
     @cc

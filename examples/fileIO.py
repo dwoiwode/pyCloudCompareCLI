@@ -1,6 +1,6 @@
 import pyCloudCompare as cc
 
-cmd = cc.CloudCompareCMD()
+cmd = cc.CloudCompareCLI()
 cmd.silent()
 cmd.open("pointcloud.ply")
 cmd.cloudExportFormat(cc.CLOUD_EXPORT_FORMAT.ASCII, extension="xyz")
