@@ -5,10 +5,10 @@ You can build and chain commands which can be executed.
 
 ## Requirements
 * Python3.6+
-* Installed version of [CloudCompare](https://cloudcompare.org/)
+* An installed version of [CloudCompare](https://cloudcompare.org/)
 
 ## Basic Usage
-Read ply-file and save in ascii-format with extension ".xyz". Disable console
+Read ply-file and save in ascii-format with extension ".xyz".
 
 ````python
 import pyCloudCompare as cc
@@ -21,3 +21,16 @@ cmd.saveClouds("newPointcloud.xyz")
 print(cmd)
 cmd.execute()
 ````
+
+Same example with Context-Manager: 
+````python
+import pyCloudCompare as cc
+
+with cc.CloudCompareCLI() as cmd:
+    cmd.silent()  # Disable console
+    cmd.open("pointcloud.ply")  # Read file
+    cmd.cloudExportFormat(cc.CLOUD_EXPORT_FORMAT.ASCII, extension="xyz")
+    cmd.saveClouds("newPointcloud.xyz")
+    print(cmd)
+````
+

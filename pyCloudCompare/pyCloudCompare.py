@@ -375,6 +375,12 @@ class CloudCompareCLI:
     def __str__(self):
         return self.toCmd()
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.execute()
+
     def toCmd(self):
         argumentsCopy = list(self.arguments)
         isSilent = False
