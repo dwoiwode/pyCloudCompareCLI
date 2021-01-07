@@ -330,8 +330,8 @@ class ONOFF(Enum):
     @classmethod
     def fromBool(cls, value):
         if value:
-            return BOOL.ON
-        return BOOL.OFF
+            return ONOFF.ON
+        return ONOFF.OFF
 
 
 def cc(func):
