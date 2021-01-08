@@ -397,9 +397,10 @@ class CloudCompareCLI:
             self._addedToPath = True
             sys.path.append(str(self.exec.parent))
 
-        proc = subprocess.run(self.toCmd())
+        proc = subprocess.run(self.toCmd(),stdout=subprocess.PIPE)
         ret = proc.returncode
         if ret != 0:
+            print(proc.stdout.decode("utf-8"), file=sys.stderr)
             raise RuntimeWarning(f"Non-Zero Returncode ({ret})")
         return ret
 
