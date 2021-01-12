@@ -6,7 +6,7 @@ from functools import wraps
 from pathlib import Path
 from typing import List, Any
 
-__version__ = "0.0.2"
+__version__ = "0.0.3"
 __author__ = "dwoiwode"
 __license__ = "MIT"
 
@@ -18,6 +18,7 @@ elif _platform.startswith("linux"):
 elif _platform.startswith("darwin"):
     DEFAULT_EXECUTABLE = "CloudCompare"  # TODO: Update default executable for macOS
 
+_FLAG_SILENT = "-SILENT"
 
 class FEATURES(Enum):
     SUM_OF_EIGENVALUES = "SUM_OF_EIGENVALUES"
@@ -255,11 +256,11 @@ class CloudCompareCommand:
     def toCmd(self):
         argumentsCopy = list(self.arguments)
         isSilent = False
-        while FLAGS.SILENT in argumentsCopy:
+        while _FLAG_SILENT in argumentsCopy:
             isSilent = True
-            argumentsCopy.remove(FLAGS.SILENT)
+            argumentsCopy.remove(_FLAG_SILENT)
         if isSilent:
-            argumentsCopy.insert(0, FLAGS.SILENT)
+            argumentsCopy.insert(0, _FLAG_SILENT)
         args = " ".join([arg.value if isinstance(arg, Enum) else str(arg) for arg in argumentsCopy])
         return f'"{str(self.ccCLI.exec)}" {args}'
 
@@ -278,11 +279,11 @@ class CloudCompareCommand:
     @cc()
     def silent(self, isSilent=True):
         if isSilent:
-            if FLAGS.SILENT not in self.arguments:
-                self.arguments.append(FLAGS.SILENT)
+            if _FLAG_SILENT not in self.arguments:
+                self.arguments.append(_FLAG_SILENT)
         else:
-            while FLAGS.SILENT in self.arguments:
-                self.arguments.remove(FLAGS.SILENT)
+            while _FLAG_SILENT in self.arguments:
+                self.arguments.remove(_FLAG_SILENT)
 
     @cc("-O")
     def open(self, filepath: str or Path, skip=None, global_shift=None):
