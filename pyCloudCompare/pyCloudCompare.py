@@ -574,7 +574,7 @@ class CloudCompareCommand:
         self.arguments.append(parametersFile)
         if useConfidence is not None:
             assert 0 <= useConfidence <= 1
-            self.arguments += ["-USE_CONFIDENCE", useConfidence]
+            self.arguments += ["USE_CONFIDENCE", useConfidence]
 
     @cc("-PCV")
     def pcv(self, nRays=None, isClosed=False, northernHemisphere=False, resolution=None):
@@ -677,17 +677,17 @@ class CloudCompareCommand:
     @cc("-SAVE_CLOUDS")
     def saveClouds(self, *files, allAtOnce=False):
         if allAtOnce:
-            self.arguments.append("-ALL_AT_ONCE")
+            self.arguments.append("ALL_AT_ONCE")
         if files:
-            self.arguments.append("-FILE")
+            self.arguments.append("FILE")
             self.arguments.append('"' + ' '.join(map(str, files)) + '"')
 
     @cc("-SAVE_MESHES")
     def saveMeshes(self, *files, allAtOnce=False):
         if allAtOnce:
-            self.arguments.append("-ALL_AT_ONCE")
+            self.arguments.append("ALL_AT_ONCE")
         if files:
-            self.arguments.append("-FILE")
+            self.arguments.append("FILE")
             self.arguments.append('"' + ' '.join(map(str, files)) + '"')
 
     @cc("-CLEAR")
