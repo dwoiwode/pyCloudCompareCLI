@@ -179,6 +179,14 @@ class PLY_EXPORT_FORMAT(Enum):
     BINARY_LITTLE_ENDIAN = "BINARY_LE"
 
 
+class RANSAC_PRIMITIVES(Enum):
+    PLANE = "PLANE"
+    SPHERE = "SPHERE"
+    CYCLINDER = "CYLINDER"
+    CONE = "CONE"
+    TORUS = "TORUS"
+
+
 class BOOL(Enum):
     TRUE = "TRUE"
     FALSE = "FALSE"
@@ -599,8 +607,58 @@ class CloudCompareCommand:
             self.arguments += ["-RESOLTION", resolution]
 
     @cc("-RANSAC")
-    def ransac(self, epsilonAbsolute, epsilonPercentageOfScale, bitMap):
-        pass  # TODO
+    def ransac(self,
+               epsilonAbsolute: float = None,
+               epsilonPercentageOfScale: float = None,
+               bitmapEpsilonPercentageOfScale: float = None,
+               bitmapEpsilonAbsolute: float = None,
+               supportPoints: int = None,
+               maxNormaleDevDegree: float = None,
+               probability: float = None,
+               outCloudDir: str = None,
+               outMeshDir: str = None,
+               outPairDir: str = None,
+               outGroupDir: str = None,
+               outputIndividualSubclouds: bool = False,
+               outputIndividualPrimitives: bool = False,
+               outputIndividualPairedCloudPrimitive: bool = False,
+               outputGrouped: bool = False,
+               enablePrimitive: List[RANSAC_PRIMITIVES] = None):
+        if epsilonAbsolute is not None:
+            self.arguments += ["EPSILON_ABSOLUTE", epsilonAbsolute]
+        if epsilonPercentageOfScale is not None:
+            assert 0 < epsilonPercentageOfScale < 1
+            self.arguments += ["EPSILON_PERCENTAGE_OF_SCALE", epsilonPercentageOfScale]
+        if bitmapEpsilonPercentageOfScale is not None:
+            assert 0 < bitmapEpsilonPercentageOfScale < 1
+            self.arguments += ["BITMAP_EPISLON_PERCENTAGE_OF_SCALE", bitmapEpsilonPercentageOfScale]
+        if bitmapEpsilonAbsolute is not None:
+            self.arguments += ["BITMAP_EPSILON_ABSOLUTE", bitmapEpsilonAbsolute]
+        if supportPoints is not None:
+            self.arguments += ["SUPPORT_POINTS", supportPoints]
+        if maxNormaleDevDegree is not None:
+            self.arguments += ["MAX_NORMAL_DEV", maxNormaleDevDegree]
+        if probability is not None:
+            self.arguments += ["PROBABILITY", probability]
+        if outCloudDir is not None:
+            self.arguments += ["OUT_CLOUD_DIR", outCloudDir]
+        if outMeshDir is not None:
+            self.arguments += ["OUT_MESH_DIR", outMeshDir]
+        if outPairDir is not None:
+            self.arguments += ["OUT_PAIR_DIR", outPairDir]
+        if outGroupDir is not None:
+            self.arguments += ["OUT_GROUP_DIR", outGroupDir]
+        if outputIndividualSubclouds:
+            self.arguments.append("OUTPUT_INDIVIDUAL_SUBCLOUDS")
+        if outputIndividualPrimitives:
+            self.arguments.append("OUTPUT_INDIVIDUAL_PRIMITIVES")
+        if outputIndividualPairedCloudPrimitive:
+            self.arguments.append("OUTPUT_INDIVIDUAL_PAIRED_CLOUD_PRIMITIVE")
+        if outputGrouped:
+            self.arguments.append("OUTPUT_GROUPED")
+        if enablePrimitive is not None:
+            self.arguments.append("ENABLE_PRIMITIVE")
+            self.arguments += enablePrimitive
 
     @cc("-C_EXPORT_FMT")
     def cloudExportFormat(self, format: CLOUD_EXPORT_FORMAT, precision=12, separator=SEPARATOR.SPACE, addHeader=False,
