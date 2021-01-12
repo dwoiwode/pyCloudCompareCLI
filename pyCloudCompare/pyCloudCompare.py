@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import List, Any
 import logging
 
-__version__ = "0.0.3"
+__version__ = "0.0.4"
 __author__ = "dwoiwode"
 __license__ = "MIT"
 
@@ -247,6 +247,9 @@ class CloudCompareCLI:
         self.exec = Path(executable).absolute()
         if str(self.exec) not in sys.path:
             sys.path.append(str(self.exec.parent))
+
+    def __repr__(self):
+        return f"CloudCompareCLI({self.exec})"
 
     def newCommand(self):
         return CloudCompareCommand(self)

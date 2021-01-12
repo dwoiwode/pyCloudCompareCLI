@@ -12,8 +12,8 @@ Read ply-file and save in ascii-format with extension ".xyz".
 
 ````python
 import pyCloudCompare as cc
-
-cmd = cc.CloudCompareCLI()
+cli = cc.CloudCompareCLI()
+cmd = cli.newCommand()
 cmd.silent()  # Disable console
 cmd.open("pointcloud.ply")  # Read file
 cmd.cloudExportFormat(cc.CLOUD_EXPORT_FORMAT.ASCII, extension="xyz")
@@ -25,8 +25,8 @@ cmd.execute()
 Same example with Context-Manager: 
 ````python
 import pyCloudCompare as cc
-
-with cc.CloudCompareCLI() as cmd:
+cli = cc.CloudCompareCLI()
+with cli.newCommand() as cmd:
     cmd.silent()  # Disable console
     cmd.open("pointcloud.ply")  # Read file
     cmd.cloudExportFormat(cc.CLOUD_EXPORT_FORMAT.ASCII, extension="xyz")
