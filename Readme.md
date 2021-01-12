@@ -34,5 +34,5 @@ with cc.CloudCompareCLI() as cmd:
     print(cmd)
 ````
 
-## Acknowledgments
+## Acknowledgements
 The work in the scope of the CloudCompare CLI Python Wrapper in this repository is supported by the [Institute of Geo-Engineering at Clausthal University of Technology](https://www.ige.tu-clausthal.de).
