@@ -5,6 +5,7 @@ from enum import Enum
 from functools import wraps
 from pathlib import Path
 from typing import List, Any
+import logging
 
 __version__ = "0.0.3"
 __author__ = "dwoiwode"
@@ -14,11 +15,19 @@ _platform = sys.platform
 if _platform.startswith("win32"):
     DEFAULT_EXECUTABLE = r"C:\Program Files\CloudCompare\CloudCompare.exe"
 elif _platform.startswith("linux"):
+    import warnings
+
+    warnings.warn("Default executable for linux not set")
     DEFAULT_EXECUTABLE = "CloudCompare"  # TODO: Update default executable for linux
 elif _platform.startswith("darwin"):
+    import warnings
+
+    warnings.warn("Default executable for macOS not set")
     DEFAULT_EXECUTABLE = "CloudCompare"  # TODO: Update default executable for macOS
 
 _FLAG_SILENT = "-SILENT"
+_logger = logging.getLogger("pyCloudCompare")
+
 
 class FEATURES(Enum):
     SUM_OF_EIGENVALUES = "SUM_OF_EIGENVALUES"
@@ -128,6 +137,7 @@ class SEPARATOR(Enum):
             return SEPARATOR.COMMA
         if s == "\t":
             return SEPARATOR.TAB
+        _logger.critical(f"Converting string to separator: Invalid character (Has to be from ' ;,\\t'. Char is: '{s}'")
         raise ValueError(f"Invalid separator (Has to be ' ;,\\t'. Is: '{s}'")
 
 
@@ -194,9 +204,10 @@ class ONOFF(Enum):
 def cc(flag=None):
     def wrapper1(func):
         @wraps(func)
-        def wrapper2(self: "CloudCompareCLI", *args, **kwargs):
-            oldArguments = list(self.arguments)
+        def wrapper2(self: "CloudCompareCommand", *args, **kwargs):
             funcName = func.__name__
+            _logger.debug(f"Add {funcName} to command")
+            oldArguments = list(self.arguments)
             try:
                 if flag is not None:
                     self.arguments.append(flag)
@@ -204,8 +215,9 @@ def cc(flag=None):
                 self._validateCommand()
                 n = len(oldArguments)
                 self.commands.append(CCCommand(funcName, self.arguments[n:]))
+                _logger.debug(f"New arguments: {self.arguments[n:]}")
             except Exception as e:
-                print(f"Failed to add {funcName}! Cause: {str(e)}. Rolling back")
+                _logger.error(f"Failed to add {funcName}! Cause: {str(e)}. Rolling back")
                 self.arguments = oldArguments
 
         return wrapper2
@@ -234,6 +246,7 @@ class CloudCompareCLI:
 
 class CloudCompareCommand:
     def __init__(self, ccCLI: CloudCompareCLI, arguments: List[Any] = None):
+        _logger.debug("Initializing new command")
         self.ccCLI = ccCLI
         self.arguments = arguments or []
         self.commands: List[CCCommand] = []
@@ -262,10 +275,11 @@ class CloudCompareCommand:
         return f'"{str(self.ccCLI.exec)}" {args}'
 
     def execute(self):
+        _logger.debug(f"Executing command: {str(self)}")
         proc = subprocess.run(self.toCmd(), stdout=subprocess.PIPE)
         ret = proc.returncode
         if ret != 0:
-            print(proc.stdout.decode("utf-8"), file=sys.stderr)
+            _logger.error(proc.stdout.decode("utf-8"))
             raise RuntimeWarning(f"Non-Zero Returncode ({ret})")
         return ret
 
