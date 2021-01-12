@@ -238,9 +238,6 @@ class CloudCompareCommand:
         self.arguments = arguments or []
         self.commands: List[CCCommand] = []
 
-        # Internal flags
-        self._addedToPath = False
-
     def __repr__(self):
         return f"CloudCompareCMD({self.ccCLI}, {self.arguments})"
 
@@ -583,7 +580,7 @@ class CloudCompareCommand:
         if isClosed:
             self.arguments.append("-IS_CLOSED")
         if northernHemisphere:
-            self.arguments.append("-NORTHERN_HEMISPHERE")
+            self.arguments.append("-180")
         if resolution is not None:
             self.arguments += ["-RESOLTION", resolution]
 
@@ -597,11 +594,11 @@ class CloudCompareCommand:
         self.arguments.append(format)
 
         if precision != 12:
-            self.arguments += ["-PRECSION", precision]
+            self.arguments += ["-PREC", precision]
         if isinstance(separator, str):
             separator = SEPARATOR.fromString(separator)
         if separator != SEPARATOR.SPACE:
-            self.arguments += ["-SEPARATOR", separator]
+            self.arguments += ["-SEP", separator]
         if addHeader:
             self.arguments.append("-ADD_HEADER")
         if addPointCount:
