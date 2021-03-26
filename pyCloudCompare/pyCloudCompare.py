@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import List, Any
 import logging
 
-__version__ = "0.0.4"
+__version__ = "0.0.5"
 __author__ = "dwoiwode"
 __license__ = "MIT"
 
