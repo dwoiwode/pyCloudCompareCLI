@@ -128,7 +128,7 @@ class SEPARATOR(Enum):
     TAB = "TAB"
 
     @classmethod
-    def fromString(cls, s):
+    def from_string(cls, s):
         if s == " ":
             return SEPARATOR.SPACE
         if s == ";":
@@ -192,7 +192,7 @@ class BOOL(Enum):
     FALSE = "FALSE"
 
     @classmethod
-    def fromBool(cls, value):
+    def from_bool(cls, value):
         if value:
             return BOOL.TRUE
         return BOOL.FALSE
@@ -203,7 +203,7 @@ class ONOFF(Enum):
     OFF = "OFF"
 
     @classmethod
-    def fromBool(cls, value):
+    def from_bool(cls, value):
         if value:
             return ONOFF.ON
         return ONOFF.OFF
@@ -213,20 +213,20 @@ def cc(flag=None):
     def wrapper1(func):
         @wraps(func)
         def wrapper2(self: "CloudCompareCommand", *args, **kwargs):
-            funcName = func.__name__
-            _logger.debug(f"Add {funcName} to command")
-            oldArguments = list(self.arguments)
+            func_name = func.__name__
+            _logger.debug(f"Add {func_name} to command")
+            old_arguments = list(self.arguments)
             try:
                 if flag is not None:
                     self.arguments.append(flag)
                 func(self, *args, **kwargs)
-                self._validateCommand()
-                n = len(oldArguments)
-                self.commands.append(CCCommand(funcName, self.arguments[n:]))
+                self._validate_command()
+                n = len(old_arguments)
+                self.commands.append(CCCommand(func_name, self.arguments[n:]))
                 _logger.debug(f"New arguments: {self.arguments[n:]}")
             except Exception as e:
-                _logger.error(f"Failed to add {funcName}! Cause: {str(e)}. Rolling back")
-                self.arguments = oldArguments
+                _logger.error(f"Failed to add {func_name}! Cause: {str(e)}. Rolling back")
+                self.arguments = old_arguments
 
         return wrapper2
 
@@ -234,8 +234,8 @@ def cc(flag=None):
 
 
 class CCCommand:
-    def __init__(self, functionName: str, arguments: List[Any]):
-        self.functionName = functionName
+    def __init__(self, function_name: str, arguments: List[Any]):
+        self.functionName = function_name
         self.arguments = arguments
 
     def __repr__(self):
@@ -251,22 +251,22 @@ class CloudCompareCLI:
     def __repr__(self):
         return f"CloudCompareCLI({self.exec})"
 
-    def newCommand(self):
+    def new_command(self):
         return CloudCompareCommand(self)
 
 
 class CloudCompareCommand:
-    def __init__(self, ccCLI: CloudCompareCLI, arguments: List[Any] = None):
+    def __init__(self, cc_cli: CloudCompareCLI, arguments: List[Any] = None):
         _logger.debug("Initializing new command")
-        self.ccCLI = ccCLI
+        self.cc_cli = cc_cli
         self.arguments = arguments or []
         self.commands: List[CCCommand] = []
 
     def __repr__(self):
-        return f"CloudCompareCMD({self.ccCLI}, {self.arguments})"
+        return f"CloudCompareCMD({self.cc_cli}, {self.arguments})"
 
     def __str__(self):
-        return self.toCmd()
+        return self.to_cmd()
 
     def __enter__(self):
         return self
@@ -274,33 +274,33 @@ class CloudCompareCommand:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.execute()
 
-    def toCmd(self):
-        argumentsCopy = list(self.arguments)
-        isSilent = False
-        while _FLAG_SILENT in argumentsCopy:
-            isSilent = True
-            argumentsCopy.remove(_FLAG_SILENT)
-        if isSilent:
-            argumentsCopy.insert(0, _FLAG_SILENT)
-        args = " ".join([arg.value if isinstance(arg, Enum) else str(arg) for arg in argumentsCopy])
-        return f'"{str(self.ccCLI.exec)}" {args}'
+    def to_cmd(self):
+        arguments_copy = list(self.arguments)
+        is_silent = False
+        while _FLAG_SILENT in arguments_copy:
+            is_silent = True
+            arguments_copy.remove(_FLAG_SILENT)
+        if is_silent:
+            arguments_copy.insert(0, _FLAG_SILENT)
+        args = " ".join([arg.value if isinstance(arg, Enum) else str(arg) for arg in arguments_copy])
+        return f'"{str(self.cc_cli.exec)}" {args}'
 
     def execute(self):
         _logger.debug(f"Executing command: {str(self)}")
-        proc = subprocess.run(self.toCmd(), stdout=subprocess.PIPE)
+        proc = subprocess.run(self.to_cmd(), stdout=subprocess.PIPE)
         ret = proc.returncode
         if ret != 0:
             _logger.error(proc.stdout.decode("utf-8"))
             raise RuntimeWarning(f"Non-Zero Returncode ({ret})")
         return ret
 
-    def _validateCommand(self):
-        cmd = self.toCmd()
+    def _validate_command(self):
+        self.to_cmd()
 
     # =================== Commands ===================
     @cc()
-    def silent(self, isSilent=True):
-        if isSilent:
+    def silent(self, is_silent=True):
+        if is_silent:
             if _FLAG_SILENT not in self.arguments:
                 self.arguments.append(_FLAG_SILENT)
         else:
@@ -308,7 +308,10 @@ class CloudCompareCommand:
                 self.arguments.remove(_FLAG_SILENT)
 
     @cc("-O")
-    def open(self, filepath: str or Path, skip=None, global_shift=None):
+    def open(self,
+             filepath: str or Path,
+             skip=None,
+             global_shift=None):
         self.arguments.append(f"\"{filepath}\"")
         if skip is not None:
             self.arguments.append("-SKIP")
@@ -327,11 +330,16 @@ class CloudCompareCommand:
         self.arguments.append(radius)
 
     @cc("-FEATURE")
-    def feature(self, feature: FEATURES, radius: float):
+    def feature(self,
+                feature: FEATURES,
+                radius: float):
         self.arguments += [feature, radius]
 
     @cc("-OCTREE_NORMALS")
-    def octreeNormals(self, radius: float, orient: OCTREE_ORIENT = None, model: OCTREE_MODEL = None):
+    def octree_normals(self,
+                       radius: float,
+                       orient: OCTREE_ORIENT = None,
+                       model: OCTREE_MODEL = None):
         self.arguments.append(radius)
         if orient is not None:
             self.arguments.append("-ORIENT")
@@ -341,422 +349,508 @@ class CloudCompareCommand:
             self.arguments.append(model)
 
     @cc("-COMPUTE_NORMALS")
-    def computeNormals(self):
+    def compute_normals(self):
         pass
 
     @cc("-NORMALS_TO_SFS")
-    def normalsToSfs(self):
+    def normals_to_sfs(self):
         pass
 
     @cc("-NORMALS_TO_DIP")
-    def normalsToDip(self):
+    def normals_to_dip(self):
         pass
 
     @cc("-CLEAR_NORMALS")
-    def clearNormals(self):
+    def clear_normals(self):
         pass
 
     @cc("-ORIENT_NORMS_MST")
-    def orientNormsMst(self, numberOfNeighbors: int):
-        self.arguments.append(numberOfNeighbors)
+    def orient_norms_mst(self, number_of_neighbors: int):
+        self.arguments.append(number_of_neighbors)
 
     @cc("-MERGE_CLOUDS")
-    def mergeClouds(self):
+    def merge_clouds(self):
         pass
 
     @cc("-MERGE_MESHES")
-    def mergeMeshes(self):
+    def merge_meshes(self):
         pass
 
     @cc("-SS")
-    def subsampling(self, algorithm: SS_ALGORITHM, parameter):
+    def subsampling(self,
+                    algorithm: SS_ALGORITHM,
+                    parameter):
         self.arguments.append(algorithm)
         self.arguments.append(parameter)
 
     @cc("-EXTRACT_CC")
-    def extractCC(self, octreeLevel, minPoints):
-        assert 1 <= octreeLevel <= 21
-        self.arguments += [octreeLevel, minPoints]
+    def extract_cc(self,
+                   octree_level,
+                   min_points):
+        assert 1 <= octree_level <= 21
+        self.arguments += [octree_level, min_points]
 
     @cc("-SAMPLE_MESH")
-    def sampleMesh(self, method: SAMPLE_METHOD, parameter):
+    def sample_mesh(self,
+                    method: SAMPLE_METHOD,
+                    parameter):
         self.arguments += [method, parameter]
 
     @cc("-EXTRACT_VERTICES")
-    def extractVertices(self):
+    def extract_vertices(self):
         pass
 
     @cc("-C2C_DIST")
-    def c2cDist(self, splitXYZ=None, maxDist=None, octreeLevel=None, model=None, maxTCount=None):
-        if splitXYZ is not None:
-            self.arguments += ["-SPLIT_XYZ", splitXYZ]
-        if maxDist is not None:
-            self.arguments += ["-MAX_DIST", maxDist]
-        if octreeLevel is not None:
-            self.arguments += ["-OCTREE_LEVEL", octreeLevel]
+    def c2c_dist(self,
+                 split_xyz=None,
+                 max_dist=None,
+                 octree_level=None,
+                 model=None,
+                 max_t_count=None):
+        if split_xyz is not None:
+            self.arguments += ["-SPLIT_XYZ", split_xyz]
+        if max_dist is not None:
+            self.arguments += ["-MAX_DIST", max_dist]
+        if octree_level is not None:
+            self.arguments += ["-OCTREE_LEVEL", octree_level]
         if model is not None:
             # TODO: Improve model input
             self.arguments += ["-MODEL", model]
-        if maxTCount is not None:
-            self.arguments += ["-MAX_TCOUNT", maxTCount]
+        if max_t_count is not None:
+            self.arguments += ["-MAX_TCOUNT", max_t_count]
 
     @cc("-C2M_DIST")
-    def c2mDist(self, flipNorms: bool = False, maxDist=None, octreeLevel=None, maxTCount=None):
-        if flipNorms:
-            self.arguments.append(flipNorms)
-        if maxDist is not None:
-            self.arguments += ["-MAX_DIST", maxDist]
-        if octreeLevel is not None:
-            self.arguments += ["-OCTREE_LEVEL", octreeLevel]
-        if maxTCount is not None:
-            self.arguments += ["-MAX_TCOUNT", maxTCount]
+    def c2m_dist(self,
+                 flip_norms: bool = False,
+                 max_dist=None,
+                 octree_level=None,
+                 max_t_count=None):
+        if flip_norms:
+            self.arguments.append(flip_norms)
+        if max_dist is not None:
+            self.arguments += ["-MAX_DIST", max_dist]
+        if octree_level is not None:
+            self.arguments += ["-OCTREE_LEVEL", octree_level]
+        if max_t_count is not None:
+            self.arguments += ["-MAX_TCOUNT", max_t_count]
 
     @cc("-RASTERIZE")
-    def rasterize(self, gridStep, vertDir=None, proj=None, sfProj=None, emptyFill=None, customHeight=None,
-                  outputCloud=False, outputMesh=False, outputRasterZ=False, outputRasterRGB=False):
-        self.arguments += ["-GRID_STEP", gridStep]
-        if vertDir is not None:
-            self.arguments += ["-VERT_DIR", vertDir]
+    def rasterize(self,
+                  grid_step,
+                  vert_dir=None,
+                  proj=None,
+                  sf_proj=None,
+                  empty_fill=None,
+                  custom_height=None,
+                  output_cloud=False,
+                  output_mesh=False,
+                  output_raster_z=False,
+                  output_raster_rgb=False):
+        self.arguments += ["-GRID_STEP", grid_step]
+        if vert_dir is not None:
+            self.arguments += ["-VERT_DIR", vert_dir]
         if proj is not None:
             self.arguments += ["-PROJ", proj]
-        if sfProj is not None:
-            self.arguments += ["-SF_PROJ", sfProj]
-        if emptyFill is not None:
-            self.arguments += ["-EMPTY_FILL", emptyFill]
-        if customHeight is not None:
-            self.arguments += ["-CUSTOM_HEIGHT", customHeight]
-        if outputCloud:
+        if sf_proj is not None:
+            self.arguments += ["-SF_PROJ", sf_proj]
+        if empty_fill is not None:
+            self.arguments += ["-EMPTY_FILL", empty_fill]
+        if custom_height is not None:
+            self.arguments += ["-CUSTOM_HEIGHT", custom_height]
+        if output_cloud:
             self.arguments.append("-OUTPUT_CLOUD")
-        if outputMesh:
+        if output_mesh:
             self.arguments.append("-OUTPUT_MESH")
-        if outputRasterZ:
+        if output_raster_z:
             self.arguments.append("-OUTPUT_RASTER_Z")
-        if outputRasterRGB:
+        if output_raster_rgb:
             self.arguments.append("-OUTPUT_RASTER_RGB")
 
     @cc("-VOLUME")
-    def volume(self, gridStep, vertDir=None, constHeight=None, groundIsFirst=False, outputMesh=False):
-        self.arguments += ["-GRID_STEP", gridStep]
-        if vertDir is not None:
-            self.arguments += ["-VERT_DIR", vertDir]
-        if constHeight is not None:
-            self.arguments += ["-CONST_HEIGHT", constHeight]
-        if groundIsFirst:
+    def volume(self,
+               grid_step,
+               vert_dir=None,
+               const_height=None,
+               ground_is_first=False,
+               output_mesh=False):
+        self.arguments += ["-GRID_STEP", grid_step]
+        if vert_dir is not None:
+            self.arguments += ["-VERT_DIR", vert_dir]
+        if const_height is not None:
+            self.arguments += ["-CONST_HEIGHT", const_height]
+        if ground_is_first:
             self.arguments.append("-GROUND_IS_FIRST")
-        if outputMesh:
+        if output_mesh:
             self.arguments.append("-OUTPUT_MESH")
 
     @cc("-STAT_TEST")
-    def statTest(self, distribution, distributionParameter, pValue, neighborCount):
-        self.arguments += [distribution, distributionParameter, pValue, neighborCount]
+    def stat_test(self,
+                  distribution,
+                  distribution_parameter,
+                  p_value,
+                  neighbor_count):
+        self.arguments += [distribution, distribution_parameter, p_value, neighbor_count]
 
     @cc("-COORD_TO_SF")
-    def coordToSF(self, dimension):
+    def coord_to_sf(self, dimension):
         assert dimension in ["X", "Y", "Z"]
         self.arguments.append(dimension)
 
     @cc("-FILTER_SF")
-    def filterSF(self, minVal, maxVal):
-        SPECIAL_WORDS = ["MIN", "DISP_MIN", "SAT_MIN", "MAX", "DISP_MAX", "SAT_MAX"]
-        if isinstance(minVal, str):
-            assert minVal in SPECIAL_WORDS
-        if isinstance(maxVal, str):
-            assert maxVal in SPECIAL_WORDS
-        self.arguments += [minVal, maxVal]
+    def filter_sf(self,
+                  min_val,
+                  max_val):
+        special_words = ["MIN", "DISP_MIN", "SAT_MIN", "MAX", "DISP_MAX", "SAT_MAX"]
+        if isinstance(min_val, str):
+            assert min_val in special_words
+        if isinstance(max_val, str):
+            assert max_val in special_words
+        self.arguments += [min_val, max_val]
 
     @cc("-DENSITY")
-    def density(self, sphereRadius, type: DENSITY_TYPE = None):
-        self.arguments.append(sphereRadius)
-        if type is not None:
-            self.arguments += ["-TYPE", type]
+    def density(self,
+                sphere_radius,
+                type_: DENSITY_TYPE = None):
+        self.arguments.append(sphere_radius)
+        if type_ is not None:
+            self.arguments += ["-TYPE", type_]
 
     @cc("-APPROX_DENSITY")
-    def approxDensity(self, type: DENSITY_TYPE = None):
-        if type is not None:
-            self.arguments += ["-TYPE", type]
+    def approx_density(self, type_: DENSITY_TYPE = None):
+        if type_ is not None:
+            self.arguments += ["-TYPE", type_]
 
     @cc("-ROUGH")
-    def rough(self, kernelSize):
-        self.arguments.append(kernelSize)
+    def rough(self, kernel_size):
+        self.arguments.append(kernel_size)
 
     @cc("-CURV")
-    def curvature(self, type: CURV_TYPE, kernelSize):
-        self.arguments += [type, kernelSize]
+    def curvature(self,
+                  type_: CURV_TYPE,
+                  kernel_size):
+        self.arguments += [type_, kernel_size]
 
     @cc("-SF_GRAD")
-    def sfGrad(self, euclidian: bool):
-        euclidian = BOOL.fromBool(euclidian)
+    def sf_grad(self, euclidian: bool):
+        euclidian = BOOL.from_bool(euclidian)
         self.arguments.append(euclidian)
 
     @cc("-BEST_FIT_PLANE")
-    def bestFitPlane(self, makeHoriz=False, keepLoaded=False):
-        if makeHoriz:
+    def best_fit_plane(self,
+                       make_horiz=False,
+                       keep_loaded=False):
+        if make_horiz:
             self.arguments.append("-MAKE_HORIZ")
-        if keepLoaded:
+        if keep_loaded:
             self.arguments.append("-KEEP_LOADED")
 
     @cc("-APPLY_TRANS")
-    def applyTransformation(self, filename: str or Path):
+    def apply_transformation(self, filename: str or Path):
         self.arguments.append(filename)
 
     @cc("-MATCH_CENTERS")
-    def matchCenters(self):
+    def match_centers(self):
         pass
 
     @cc("-DELAUNAY")
-    def delaunay(self, xyPlane=False, bestFit=False, maxEdgeLength=None):
-        if xyPlane:
+    def delaunay(self,
+                 xy_plane=False,
+                 best_fit=False,
+                 max_edge_length=None):
+        if xy_plane:
             self.arguments.append("-AA")
-        if bestFit:
+        if best_fit:
             self.arguments.append("-BEST_FIT")
-        if maxEdgeLength is not None:
-            self.arguments += ["-MAX_EDGE_LENGTH", maxEdgeLength]
+        if max_edge_length is not None:
+            self.arguments += ["-MAX_EDGE_LENGTH", max_edge_length]
 
     @cc("-ICP")
-    def icp(self, referenceIsFirst=False, minErrorDiff: float = 1e-6, iter: int = None, overlap: int = 100,
-            adjustScale=False, randomSamplingLimit=20000, farthestRemoval=False, rot: ROT = None):
-        if referenceIsFirst:
+    def icp(self,
+            reference_is_first=False,
+            min_error_diff: float = 1e-6,
+            iter_: int = None,
+            overlap: int = 100,
+            adjust_scale=False,
+            random_sampling_limit=20000,
+            farthest_removal=False,
+            rot: ROT = None):
+        if reference_is_first:
             self.arguments.append("-REFERENCE_IS_FIRST")
-        if minErrorDiff != 1e-6:
-            self.arguments += ["-MIN_ERROR_DIFF", minErrorDiff]
-        if iter is not None:
-            self.arguments += ["-ITER", iter]
+        if min_error_diff != 1e-6:
+            self.arguments += ["-MIN_ERROR_DIFF", min_error_diff]
+        if iter_ is not None:
+            self.arguments += ["-ITER", iter_]
         if overlap != 100:
             self.arguments += ["-OVERLAP", overlap]
-        if adjustScale:
+        if adjust_scale:
             self.arguments.append("-ADJUST_SCALE")
-        if randomSamplingLimit != 20000:
-            self.arguments += ["-RANDOM_SAMPLING_LIMIT", randomSamplingLimit]
-        if farthestRemoval:
+        if random_sampling_limit != 20000:
+            self.arguments += ["-RANDOM_SAMPLING_LIMIT", random_sampling_limit]
+        if farthest_removal:
             self.arguments.append("-FARTHEST_REMOVAL")
         # TODO: DATA_SF_WEIGHTS
         # TODO: MODEL_SF_WEIGHTS
         if rot is not None:
-            self.arguments.append("-ROT".value + rot.value)
+            self.arguments.append("-ROT" + rot.value)
 
     @cc("-CROP")
-    def crop(self, xMin, yMin, zMin, xMax, yMax, zMax, outside=False):
-        boxString = f"{xMin}:{yMin}:{zMin}:{xMax}:{yMax}:{zMax}"
-        self.arguments.append(boxString)
+    def crop(self,
+             x_min, y_min, z_min,
+             x_max, y_max, z_max,
+             outside=False):
+        box_string = f"{x_min}:{y_min}:{z_min}:{x_max}:{y_max}:{z_max}"
+        self.arguments.append(box_string)
         if outside:
             self.arguments.append("-OUTSIDE")
 
     @cc("-CROP2D")
-    def crop2D(self, orthoDim, *xy, outside=False):
-        self.arguments += [orthoDim, len(xy)]
+    def crop_2d(self,
+                ortho_dim,
+                *xy,
+                outside=False):
+        self.arguments += [ortho_dim, len(xy)]
         for x, y in xy:
             self.arguments += [x, y]
         if outside:
             self.arguments.append("-OUTSIDE")
 
     @cc("-CROSS_SECTION")
-    def crossSection(self, xmlFilename: str or Path):
-        self.arguments.append(xmlFilename)
+    def cross_section(self, xml_filename: str or Path):
+        self.arguments.append(xml_filename)
 
     @cc("-SOR")
-    def sor(self, numberOfNeighbors, sigma):
-        self.arguments += [numberOfNeighbors, sigma]
+    def sor(self, number_of_neighbors, sigma):
+        self.arguments += [number_of_neighbors, sigma]
 
     @cc("-SF_ARITHMETIC")
-    def sfArithmetic(self, sfIndex: int or str, operation: SF_ARITHMETICS):
-        if isinstance(sfIndex, str):
-            assert sfIndex == "LAST"
+    def sf_arithmetic(self,
+                      sf_index: int or str,
+                      operation: SF_ARITHMETICS):
+        if isinstance(sf_index, str):
+            assert sf_index == "LAST"
         else:
-            assert sfIndex >= 0
-        self.arguments += [sfIndex, operation]
+            assert sf_index >= 0
+        self.arguments += [sf_index, operation]
 
     @cc("-SF_OP")
-    def sfOperation(self, sfIndex, operation: SF_OPERATIONS, value):
-        if isinstance(sfIndex, str):
-            assert sfIndex == "LAST"
+    def sf_operation(self,
+                     sf_index,
+                     operation: SF_OPERATIONS,
+                     value):
+        if isinstance(sf_index, str):
+            assert sf_index == "LAST"
         else:
-            assert sfIndex >= 0
-        self.arguments += [sfIndex, operation, value]
+            assert sf_index >= 0
+        self.arguments += [sf_index, operation, value]
 
     @cc("-CBANDING")
-    def cBanding(self, dim: str, freq: int):
+    def c_banding(self,
+                  dim: str,
+                  freq: int):
         assert dim in ["X", "Y", "Z"]
         self.arguments += [dim, freq]
 
     @cc("-SF_COLOR_SCALE")
-    def sfColorScale(self, filename: str or Path):
+    def sf_color_scale(self, filename: str or Path):
         self.arguments.append(filename)
 
     @cc("-SF_CONVERT_TO_RGB")
-    def sfConvertToRGB(self, replaceExisting: bool):
-        replaceExisting = BOOL.fromBool(replaceExisting)
-        self.arguments.append(replaceExisting)
+    def sf_convert_to_rgb(self, replace_existing: bool):
+        replace_existing = BOOL.from_bool(replace_existing)
+        self.arguments.append(replace_existing)
 
     @cc("-M3C2")
-    def m3c2(self, parametersFile: str or Path):
-        self.arguments.append(parametersFile)
+    def m3c2(self, parameters_file: str or Path):
+        self.arguments.append(parameters_file)
 
     @cc("-CANUPO_CLASSIFY")
-    def canupoClassify(self, parametersFile: str or Path, useConfidence=None):
-        self.arguments.append(parametersFile)
-        if useConfidence is not None:
-            assert 0 <= useConfidence <= 1
-            self.arguments += ["USE_CONFIDENCE", useConfidence]
+    def canupo_classify(self,
+                        parameters_file: str or Path,
+                        use_confidence=None):
+        self.arguments.append(parameters_file)
+        if use_confidence is not None:
+            assert 0 <= use_confidence <= 1
+            self.arguments += ["USE_CONFIDENCE", use_confidence]
 
     @cc("-PCV")
-    def pcv(self, nRays=None, isClosed=False, northernHemisphere=False, resolution=None):
-        if nRays is not None:
-            self.arguments += ["-N_RAYS", nRays]
-        if isClosed:
+    def pcv(self,
+            n_rays=None,
+            is_closed=False,
+            northern_hemisphere=False,
+            resolution=None):
+        if n_rays is not None:
+            self.arguments += ["-N_RAYS", n_rays]
+        if is_closed:
             self.arguments.append("-IS_CLOSED")
-        if northernHemisphere:
+        if northern_hemisphere:
             self.arguments.append("-180")
         if resolution is not None:
             self.arguments += ["-RESOLTION", resolution]
 
     @cc("-RANSAC")
     def ransac(self,
-               epsilonAbsolute: float = None,
-               epsilonPercentageOfScale: float = None,
-               bitmapEpsilonPercentageOfScale: float = None,
-               bitmapEpsilonAbsolute: float = None,
-               supportPoints: int = None,
-               maxNormaleDevDegree: float = None,
+               epsilon_absolute: float = None,
+               epsilon_percentage_of_scale: float = None,
+               bitmap_epsilon_percentage_of_scale: float = None,
+               bitmap_epsilon_absolute: float = None,
+               support_points: int = None,
+               max_normale_dev_degree: float = None,
                probability: float = None,
-               outCloudDir: str = None,
-               outMeshDir: str = None,
-               outPairDir: str = None,
-               outGroupDir: str = None,
-               outputIndividualSubclouds: bool = False,
-               outputIndividualPrimitives: bool = False,
-               outputIndividualPairedCloudPrimitive: bool = False,
-               outputGrouped: bool = False,
-               enablePrimitive: List[RANSAC_PRIMITIVES] = None):
-        if epsilonAbsolute is not None:
-            self.arguments += ["EPSILON_ABSOLUTE", epsilonAbsolute]
-        if epsilonPercentageOfScale is not None:
-            assert 0 < epsilonPercentageOfScale < 1
-            self.arguments += ["EPSILON_PERCENTAGE_OF_SCALE", epsilonPercentageOfScale]
-        if bitmapEpsilonPercentageOfScale is not None:
-            assert 0 < bitmapEpsilonPercentageOfScale < 1
-            self.arguments += ["BITMAP_EPISLON_PERCENTAGE_OF_SCALE", bitmapEpsilonPercentageOfScale]
-        if bitmapEpsilonAbsolute is not None:
-            self.arguments += ["BITMAP_EPSILON_ABSOLUTE", bitmapEpsilonAbsolute]
-        if supportPoints is not None:
-            self.arguments += ["SUPPORT_POINTS", supportPoints]
-        if maxNormaleDevDegree is not None:
-            self.arguments += ["MAX_NORMAL_DEV", maxNormaleDevDegree]
+               out_cloud_dir: str = None,
+               out_mesh_dir: str = None,
+               out_pair_dir: str = None,
+               out_group_dir: str = None,
+               output_individual_subclouds: bool = False,
+               output_individual_primitives: bool = False,
+               output_individual_paired_cloud_primitive: bool = False,
+               output_grouped: bool = False,
+               enable_primitive: List[RANSAC_PRIMITIVES] = None):
+        if epsilon_absolute is not None:
+            self.arguments += ["EPSILON_ABSOLUTE", epsilon_absolute]
+        if epsilon_percentage_of_scale is not None:
+            assert 0 < epsilon_percentage_of_scale < 1
+            self.arguments += ["EPSILON_PERCENTAGE_OF_SCALE", epsilon_percentage_of_scale]
+        if bitmap_epsilon_percentage_of_scale is not None:
+            assert 0 < bitmap_epsilon_percentage_of_scale < 1
+            self.arguments += ["BITMAP_EPISLON_PERCENTAGE_OF_SCALE", bitmap_epsilon_percentage_of_scale]
+        if bitmap_epsilon_absolute is not None:
+            self.arguments += ["BITMAP_EPSILON_ABSOLUTE", bitmap_epsilon_absolute]
+        if support_points is not None:
+            self.arguments += ["SUPPORT_POINTS", support_points]
+        if max_normale_dev_degree is not None:
+            self.arguments += ["MAX_NORMAL_DEV", max_normale_dev_degree]
         if probability is not None:
             self.arguments += ["PROBABILITY", probability]
-        if outCloudDir is not None:
-            self.arguments += ["OUT_CLOUD_DIR", outCloudDir]
-        if outMeshDir is not None:
-            self.arguments += ["OUT_MESH_DIR", outMeshDir]
-        if outPairDir is not None:
-            self.arguments += ["OUT_PAIR_DIR", outPairDir]
-        if outGroupDir is not None:
-            self.arguments += ["OUT_GROUP_DIR", outGroupDir]
-        if outputIndividualSubclouds:
+        if out_cloud_dir is not None:
+            self.arguments += ["OUT_CLOUD_DIR", out_cloud_dir]
+        if out_mesh_dir is not None:
+            self.arguments += ["OUT_MESH_DIR", out_mesh_dir]
+        if out_pair_dir is not None:
+            self.arguments += ["OUT_PAIR_DIR", out_pair_dir]
+        if out_group_dir is not None:
+            self.arguments += ["OUT_GROUP_DIR", out_group_dir]
+        if output_individual_subclouds:
             self.arguments.append("OUTPUT_INDIVIDUAL_SUBCLOUDS")
-        if outputIndividualPrimitives:
+        if output_individual_primitives:
             self.arguments.append("OUTPUT_INDIVIDUAL_PRIMITIVES")
-        if outputIndividualPairedCloudPrimitive:
+        if output_individual_paired_cloud_primitive:
             self.arguments.append("OUTPUT_INDIVIDUAL_PAIRED_CLOUD_PRIMITIVE")
-        if outputGrouped:
+        if output_grouped:
             self.arguments.append("OUTPUT_GROUPED")
-        if enablePrimitive is not None:
+        if enable_primitive is not None:
             self.arguments.append("ENABLE_PRIMITIVE")
-            self.arguments += enablePrimitive
+            self.arguments += enable_primitive
 
     @cc("-C_EXPORT_FMT")
-    def cloudExportFormat(self, format: CLOUD_EXPORT_FORMAT, precision=12, separator=SEPARATOR.SPACE, addHeader=False,
-                          addPointCount=False, extension: str = None):
-        self.arguments.append(format)
+    def cloud_export_format(self,
+                            format_: CLOUD_EXPORT_FORMAT,
+                            precision=12,
+                            separator=SEPARATOR.SPACE,
+                            add_header=False,
+                            add_point_count=False,
+                            extension: str = None):
+        self.arguments.append(format_)
 
         if precision != 12:
             self.arguments += ["-PREC", precision]
         if isinstance(separator, str):
-            separator = SEPARATOR.fromString(separator)
+            separator = SEPARATOR.from_string(separator)
         if separator != SEPARATOR.SPACE:
             self.arguments += ["-SEP", separator]
-        if addHeader:
+        if add_header:
             self.arguments.append("-ADD_HEADER")
-        if addPointCount:
+        if add_point_count:
             self.arguments.append("-ADD_PTS_COUNT")
         if extension is not None:
             self.arguments += ["-EXT", extension]
 
     @cc("-M_EXPORT_FMT")
-    def meshExportFormat(self, format: MESH_EXPORT_FORMAT, extension: str = None):
-        self.arguments.append(format)
+    def mesh_export_format(self,
+                           format_: MESH_EXPORT_FORMAT,
+                           extension: str = None):
+        self.arguments.append(format_)
 
         if extension is not None:
             self.arguments += ["-EXT", extension]
 
     @cc("-H_EXPORT_FMT")
-    def hierarchyExportFormat(self, format: str = "BIN"):
-        """ Mostly the BIN format, but other formats that support a collection of objects might be elligible. """
-        self.arguments.append(format)
+    def hierarchy_export_format(self, format_: str = "BIN"):
+        """ Mostly the BIN format, but other formats that support a collection of objects might be eligible. """
+        self.arguments.append(format_)
 
     @cc("-FBX")
-    def fbxExportFormat(self, format: FBX_EXPORT_FORMAT):
-        self.arguments += ["-EXPORT_FMT", format]
+    def fbx_export_format(self, format_: FBX_EXPORT_FORMAT):
+        self.arguments += ["-EXPORT_FMT", format_]
 
     @cc("-PLY_EXPORT_FMT")
-    def plyExportFormat(self, format: PLY_EXPORT_FORMAT):
-        self.arguments.append(format)
+    def ply_export_format(self, format_: PLY_EXPORT_FORMAT):
+        self.arguments.append(format_)
 
     @cc("-NO_TIMESTAMP")
-    def noTimestamp(self):
+    def no_timestamp(self):
         pass
 
     @cc("-BUNDLER_IMPORT")
-    def bundlerImport(self, filename: str or Path, altKeypoints=None, scaleFactor=None, colorDTM=None, undistort=False):
+    def bundler_import(self,
+                       filename: str or Path,
+                       alt_keypoints=None,
+                       scale_factor=None,
+                       color_dtm=None,
+                       undistort=False):
         self.arguments.append(filename)
-        if altKeypoints is not None:
-            self.arguments += ["-ALT_KEYPOINTS", altKeypoints]
-        if scaleFactor is not None:
-            self.arguments += ["-SCALE_FACTOR", scaleFactor]
-        if colorDTM is not None:
-            self.arguments += ["-COLOR_DTM", colorDTM]
+        if alt_keypoints is not None:
+            self.arguments += ["-ALT_KEYPOINTS", alt_keypoints]
+        if scale_factor is not None:
+            self.arguments += ["-SCALE_FACTOR", scale_factor]
+        if color_dtm is not None:
+            self.arguments += ["-COLOR_DTM", color_dtm]
         if undistort:
             self.arguments.append("-UNDISTORT")
 
     @cc("-DROP_GLOBAL_SHIFT")
-    def dropGlobalShift(self):
+    def drop_global_shift(self):
         pass
 
     @cc("-SET_ACTIVE_SF")
-    def setActiveSF(self, index: int):
+    def set_active_sf(self, index: int):
         self.arguments.append(index)
 
     @cc("-REMOVE_ALL_SFS")
-    def removeAllSFS(self):
+    def remove_all_sfs(self):
         pass
 
     @cc("-REMOVE_RGB")
-    def removeRGB(self):
+    def remove_rgb(self):
         pass
 
     @cc("-REMOVE_NORMALS")
-    def removeNormals(self):
+    def remove_normals(self):
         pass
 
     @cc("-REMOVE_SCAN_GRIDS")
-    def removeScanGrid(self):
+    def remove_scan_grid(self):
         pass
 
     @cc("-AUTO_SAVE")
-    def autoSave(self, onOff: bool):
-        onOff = ONOFF.fromBool(onOff)
-        self.arguments.append(onOff)
+    def auto_save(self, on_off: bool):
+        on_off = ONOFF.from_bool(on_off)
+        self.arguments.append(on_off)
 
     @cc("-SAVE_CLOUDS")
-    def saveClouds(self, *files, allAtOnce=False):
-        if allAtOnce:
+    def save_clouds(self,
+                    *files,
+                    all_at_once=False):
+        if all_at_once:
             self.arguments.append("ALL_AT_ONCE")
         if files:
             self.arguments.append("FILE")
             self.arguments.append('"' + ' '.join(map(str, files)) + '"')
 
     @cc("-SAVE_MESHES")
-    def saveMeshes(self, *files, allAtOnce=False):
-        if allAtOnce:
+    def save_meshes(self,
+                    *files,
+                    all_at_once=False):
+        if all_at_once:
             self.arguments.append("ALL_AT_ONCE")
         if files:
             self.arguments.append("FILE")
@@ -767,25 +861,27 @@ class CloudCompareCommand:
         pass
 
     @cc("-CLEAR_CLOUDS")
-    def clearClouds(self):
+    def clear_clouds(self):
         pass
 
     @cc("-CLEAR_MESHES")
-    def clearMeshes(self):
+    def clear_meshes(self):
         pass
 
     @cc("-POP_CLOUDS")
-    def popClouds(self):
+    def pop_clouds(self):
         pass
 
     @cc("-POP_MESHES")
-    def popMeshes(self):
+    def pop_meshes(self):
         pass
 
     @cc("-LOG_FILE")
-    def logFile(self, filename: Path or str):
+    def log_file(self, filename: Path or str):
         self.arguments.append(filename)
 
     # Alias
-    def statisticalOutlierRemoval(self, numberOfNeighbors, sigma):
-        self.sor(numberOfNeighbors, sigma)
+    def statistical_outlier_removal(self,
+                                    number_of_neighbors,
+                                    sigma):
+        self.sor(number_of_neighbors, sigma)

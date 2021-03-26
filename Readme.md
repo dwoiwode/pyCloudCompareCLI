@@ -12,25 +12,28 @@ Read ply-file and save in ascii-format with extension ".xyz".
 
 ````python
 import pyCloudCompare as cc
+
 cli = cc.CloudCompareCLI()
-cmd = cli.newCommand()
+cmd = cli.new_command()
 cmd.silent()  # Disable console
 cmd.open("pointcloud.ply")  # Read file
-cmd.cloudExportFormat(cc.CLOUD_EXPORT_FORMAT.ASCII, extension="xyz")
-cmd.saveClouds("newPointcloud.xyz")
+cmd.cloud_export_format(cc.CLOUD_EXPORT_FORMAT.ASCII, extension="xyz")
+cmd.save_clouds("newPointcloud.xyz")
 print(cmd)
 cmd.execute()
 ````
 
-Same example with Context-Manager: 
+Same example with Context-Manager:
+
 ````python
 import pyCloudCompare as cc
+
 cli = cc.CloudCompareCLI()
-with cli.newCommand() as cmd:
+with cli.new_command() as cmd:
     cmd.silent()  # Disable console
     cmd.open("pointcloud.ply")  # Read file
-    cmd.cloudExportFormat(cc.CLOUD_EXPORT_FORMAT.ASCII, extension="xyz")
-    cmd.saveClouds("newPointcloud.xyz")
+    cmd.cloud_export_format(cc.CLOUD_EXPORT_FORMAT.ASCII, extension="xyz")
+    cmd.save_clouds("newPointcloud.xyz")
     print(cmd)
 ````
 
