@@ -1,7 +1,7 @@
 import setuptools
 import pyCloudCompare.pyCloudCompare as cc
 
-with open("Readme.md", "r", encoding="utf-8") as fh:
+with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setuptools.setup(
