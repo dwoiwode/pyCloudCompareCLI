@@ -3,6 +3,14 @@ This is a python wrapper for CloudCompare CLI based on this [Wiki Page](https://
 
 You can build and chain commands which can be executed. 
 
+## Installation
+This package is uploaded to [pypi](https://pypi.org/project/pyCloudCompareCLI/), so you can install it with pip:
+```
+pip install pyCloudCompareCLI
+```
+
+Otherwise you can just install it from source using the [Github-Repository](https://github.com/dwoiwode/pyCloudCompareCLI/).
+
 ## Requirements
 * Python3.6+
 * An installed version of [CloudCompare](https://cloudcompare.org/)
