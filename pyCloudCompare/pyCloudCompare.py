@@ -591,7 +591,7 @@ class CloudCompareCommand:
         # TODO: DATA_SF_WEIGHTS
         # TODO: MODEL_SF_WEIGHTS
         if rot is not None:
-            self.arguments.append("-ROT" + rot.value)
+            self.arguments += ["-ROT", rot.value]
 
     @cc("-CROP")
     def crop(self,
