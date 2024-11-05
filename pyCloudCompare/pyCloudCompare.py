@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import List, Any
 import logging
 
-__version__ = "0.0.1"
+__version__ = "0.0.3"
 __author__ = "dwoiwode"
 __license__ = "MIT"
 
@@ -591,7 +591,7 @@ class CloudCompareCommand:
         # TODO: DATA_SF_WEIGHTS
         # TODO: MODEL_SF_WEIGHTS
         if rot is not None:
-            self.arguments.append("-ROT" + rot.value)
+            self.arguments += ["-ROT", rot.value]
 
     @cc("-CROP")
     def crop(self,
